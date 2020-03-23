@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+
+    <title>Autonomia Regional no Sul de Portugal - Regional Autonomy of South Portugal</title>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.4/dist/leaflet.css"
+       integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA=="
+       crossorigin=""/>
+    <link href="https://fonts.googleapis.com/css?family=Varela+Round" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/leaflet.awesome-markers.css">
+
+
+    <script src="https://unpkg.com/leaflet@1.3.4/dist/leaflet.js"
+      integrity="sha512-nMMmRyTVoLYqjP9hrbed9S+FzjZHW5gY1TWCHA5ckwXZBadntCNs8kEqAWdrb9O7rxbCaA4lKTIWjDXZxflOcA=="
+      crossorigin=""></script>
+
+    <script src="js/leaflet.awesome-markers.min.js"></script>
+    <script src="js/mustache.min.js"></script>
+
+
+    <style>
+        html {
+            height: 100%;
+            box-sizing: border-box;
+            vertical-align: baseline;
+        }
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        body, div, p {
+            font-weight: 400;
+            font-family: Open Sans,Arial,sans-serif;
+        }
+        h1, h2 {
+            font-family: Varela Round,Arial,sans-serif;
+        }
+        #map {
+            height: 100%;
+        }
+        .leaflet-popup-content h1 {
+            color: #3d84cb;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .leaflet-popup-content h2 {
+            color: #3d84cb;
+            font-size: 1.0rem;
+            font-weight: bold;
+            margin-top: 13px;
+        }
+        #panel {
+            display: block;
+            min-width: 250px;
+            z-index: 400;
+            position: absolute;
+            top: 10px;
+            left: 50px;
+            background: #fff;
+            box-shadow: 0 2px 14px 0 rgba(0,0,0,.5);
+            border: 1px solid #d4d8da;
+            text-align: center;
+        }
+        #panel #logo img {
+            border-radius: 50%;
+            width: 150px;
+            margin: 20px auto 5px auto;
+        }
+        #panel #logo {
+            color: #777;
+            padding-bottom: 25px;
+        }
+        #panel #search {
+            margin-top: -16px;
+        }
+        #panel #search input {
+            width: 90%;
+            height: 30px;
+            font-size: .75rem;
+            color: #55585a;
+            padding: 0 25px 0 30px;
+            margin: 0;
+            border: 1px solid #d4d8da;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px 0 rgba(0,0,0,.5);
+            transition: all .2s ease-in-out;
+        }
+        #panel #search input:focus {
+            width: 100%;
+            outline: none;
+            border-radius: 0;
+            border-right: 0;
+            border-left: 0;
+        }
+        #panel #layers {
+            border-top: 1px solid #d4d8da;
+            background: #f2f6f8;
+            min-height: 200px;
+            padding-bottom: 15px;
+        }
+        #panel #filter h2, #panel #results h2 {
+            font-size: 1.2rem;
+            margin-top: 20px;
+            text-align: center;
+        }
+        #panel #filter, #panel #results {
+            text-align: left;
+            padding: 20px;
+        }
+
+        #panel #results #resultEntries {
+            list-style-type: none;
+            padding-left: 0px;
+        }
+
+        #panel #results #resultEntries li {
+            cursor: pointer;
+        }
+
+        #panel #results #resultEntries li::before {
+            color: #3d84cb;
+            content: "\2022";
+            padding-right: 1.1225em;
+        }
+
+        #map .markerLogo {
+            display: block;
+            margin: 10px auto;
+            max-height: 150px;
+        }
+
+        #language {
+            display: block;
+            z-index: 400;
+            position: absolute;
+            top: 10px;
+            right: 50px;
+        }
+
+        #language img {
+            background: #fff;
+            box-shadow: 0 2px 14px 0 rgba(0,0,0,.5);
+            border: 1px solid #d4d8da;
+            display: inline-block;
+            width: 50px;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+
+        .leaflet-popup-content {
+            min-width: 290px;
+            min-height: 300px;
+        }
+
+        .leaflet-popup-content p {
+            margin: 10px 0px;
+        }
+
+        .leaflet-popup-content .btn-primary {
+            color: white;
+        }
+
+        #markerEdit {
+            max-height: 400px;
+            overflow-y: scroll;
+        }
+    </style>
+
+  </head>
+  <body>
+    <div id="map"></div>
+    <div id="language">
+        <img src="images/pt.svg" data-lang="pt" />
+        <img src="images/gb.svg" data-lang="en"  />
+    </div>
+
+    <div id="panel">
+        <div id="logo">
+            <img src="logo.jpg" />
+            <div>
+                Autonomia Regional<br />no Sul de Portugal
+            </div>
+        </div>
+        <div id="layers">
+            <div id="search">
+                <input type="text" placeholder="Search">
+            </div>
+            <div id="filter">
+                <h2>FILTER</h2>
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="filter_suppliers">
+                    <label class="form-check-label" for="filter_suppliers">Suppliers</label>
+                </div>
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="filter_projects">
+                    <label class="form-check-label" for="filter_projects">Projects</label>
+                </div>
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="filter_healer">
+                    <label class="form-check-label" for="filter_healer">Healer Network</label>
+                </div>
+            </div>
+            <div id="results" style="display:none">
+                <h2>RESULTS</h2>
+                <div id="searchResults">searching...</div>
+            </div>
+
+            <button class="btn">Add New Location</button>
+        </div>
+    </div>
+
+    <script id="template_pt" type="x-tmpl-mustache">
+        {{#logo.url}}
+        <img src="{{logo.url}}" alt="Logo" class="markerLogo" />
+        {{/logo.url}}
+
+        <h1>{{name}}</h1>
+
+        <div id="markerInformation">
+            <p>
+                <button class="btn btn-primary" id="edit">Edit</button>
+            </p>
+
+            <ul class="nav nav-tabs" id="markerTab" role="tablist">
+                <li class="nav-item"><a class="nav-link active" id="description-tab" data-toggle="tab" href="#description">Descrição</a></li>
+                <li class="nav-item"><a class="nav-link" id="needs-tab" data-toggle="tab" href="#needs">Necessidades</a></li>
+                <li class="nav-item"><a class="nav-link" id="resources-tab" data-toggle="tab" href="#resources">Recursos</a></li>
+            </ul>
+
+            <div class="tab-content" id="markerTabContent">
+                <div class="tab-pane show active" id="description" role="tabpanel">
+                    {{#description}}
+                    <h2>Informação</h2>
+                    <p>{{{description}}}</p>
+                    {{/description}}
+
+                    <h2>Contato</h2>
+                    {{#contact}}
+                    <p>{{contact}}</p>
+                    {{/contact}}
+                    {{#phone}}
+                    <p>Telefone: {{phone}}</p>
+                    {{/phone}}
+                    {{#email}}
+                    <p>Email: <a href="mailto:{{email}}">{{email}}</a></p>
+                    {{/email}}
+                    {{#website}}
+                    <p><a href="{{website}}" class="btn btn-primary">Página Web</a></p>
+                    {{/website}}
+
+                    {{#means}}
+                    <h2>Meios de produção</h2>
+                    <p>{{means}}</p>
+                    {{/means}}
+
+                    {{#hosting}}
+                    <h2>Acolhimento</h2>
+                    <p>{{hosting}}</p>
+                    {{/hosting}}
+                </div>
+                <div class="tab-pane" id="needs" role="tabpanel">
+                    {{#needProducts}}
+                    <h2>Products</h2>
+                    <p>{{needProducts}}</p>
+                    {{/needProducts}}
+                    {{#needServices}}
+                    <h2>Services</h2>
+                    <p>{{needServices}}</p>
+                    {{/needServices}}
+                    {{#needTransports}}
+                    <h2>Transports</h2>
+                    <p>{{needTransports}}</p>
+                    {{/needTransports}}
+                </div>
+                <div class="tab-pane" id="resources" role="tabpanel">
+                    {{#resourceProducts}}
+                    <h2>Products</h2>
+                    <p>{{resourceProducts}}</p>
+                    {{/resourceProducts}}
+                    {{#resourceServices}}
+                    <h2>Services</h2>
+                    <p>{{resourceServices}}</p>
+                    {{/resourceServices}}
+                    {{#resourceTransports}}
+                    <h2>Transports</h2>
+                    <p>{{resourceTransports}}</p>
+                    {{/resourceTransports}}
+                </div>
+            </div>
+        </div>
+        <div id="markerEdit" style="display:none">
+            <p>
+                <form id="markerEditForm">
+                    <div class="form-group">
+                        <label for="edit-name-pt">Name</label>
+                        <input type="text" class="form-control" id="edit-name-pt" value="{{name}}">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-description-pt">Description</label>
+                        <textarea rows="3" class="form-control" id="edit-description-pt">{{description}}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-lat-pt">Coordinates (Lat/Long)</label>
+                        <input type="text" class="form-control" id="edit-lat-pt" value="{{coordinates.lat}}" placeholder="Latitude, e.g. 38.3820365">
+                        <br />
+                        <input type="text" class="form-control" id="edit-long-pt" value="{{coordinates.long}}" placeholder="Longitude, e.g. -8.480072">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-contact-pt">Contact</label>
+                        <textarea rows="3" class="form-control" id="edit-contact-pt">{{contact}}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-phone-pt">Phone</label>
+                        <input type="text" class="form-control" id="edit-phone-pt" value="{{phone}}">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-email-pt">Email</label>
+                        <input type="email" class="form-control" id="edit-email-pt" value="{{email}}">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-website-pt">Website</label>
+                        <input type="url" class="form-control" id="edit-website-pt" value="{{website}}">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-logo-pt">Image / Logo URL</label>
+                        <input type="text" class="form-control" id="edit-logo-pt" value="{{logo}}">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-means-pt">Means</label>
+                        <textarea rows="3" class="form-control" id="edit-means-pt">{{means}}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-hosting-pt">Hosting</label>
+                        <textarea rows="3" class="form-control" id="edit-hosting-pt">{{hosting}}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-needProducts-pt">Needs: Products</label>
+                        <textarea rows="3" class="form-control" id="edit-needProducts-pt">{{needProducts}}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-needServices-pt">Needs: Services</label>
+                        <textarea rows="3" class="form-control" id="edit-needServices-pt">{{needServices}}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-needTransports-pt">Needs: Transports</label>
+                        <textarea rows="3" class="form-control" id="edit-needTransports-pt">{{needTransports}}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-resourceProducts-pt">Resources: Products</label>
+                        <textarea rows="3" class="form-control" id="edit-resourceProducts-pt">{{resourceProducts}}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-resourceServices-pt">Resources: Services</label>
+                        <textarea rows="3" class="form-control" id="edit-resourceServices-pt">{{resourceServices}}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-resourceTransports-pt">Resources: Transports</label>
+                        <textarea rows="3" class="form-control" id="edit-resourceTransports-pt">{{resourceTransports}}</textarea>
+                    </div>
+                </form>
+                <button class="btn" id="cancel">Cancel</button>
+                <button class="btn btn-primary" id="save">Save</button>
+            </p>
+        </div>
+    </script>
+    <script id="template_en" type="x-tmpl-mustache">
+        {{#logo.url}}
+        <img src="{{logo.url}}" alt="Logo" class="markerLogo" />
+        {{/logo.url}}
+
+        <h1>{{name}}</h1>
+
+        <div id="markerInformation">
+            <p>
+                <button class="btn btn-primary" id="edit">Edit</button>
+            </p>
+
+            <ul class="nav nav-tabs" id="markerTab" role="tablist">
+                <li class="nav-item"><a class="nav-link active" id="description-tab" data-toggle="tab" href="#description">Description</a></li>
+                <li class="nav-item"><a class="nav-link" id="needs-tab" data-toggle="tab" href="#needs">Needs</a></li>
+                <li class="nav-item"><a class="nav-link" id="resources-tab" data-toggle="tab" href="#resources">Resources</a></li>
+            </ul>
+
+            <div class="tab-content" id="markerTabContent">
+                <div class="tab-pane show active" id="description" role="tabpanel">
+                    {{#description}}
+                    <h2>Info</h2>
+                    <p>{{{description}}}</p>
+                    {{/description}}
+
+                    <h2>Contact</h2>
+                    {{#contact}}
+                    <p>{{contact}}</p>
+                    {{/contact}}
+                    {{#phone}}
+                    <p>Phone: {{phone}}</p>
+                    {{/phone}}
+                    {{#email}}
+                    <p>Email: <a href="mailto:{{email}}"></a></p>
+                    {{/email}}
+                    {{#website}}
+                    <p><a href="{{website}}" class="btn btn-primary">Website</a></p>
+                    {{/website}}
+
+                    {{#means}}
+                    <h2>Means</h2>
+                    <p>{{means}}</p>
+                    {{/means}}
+
+                    {{#hosting}}
+                    <h2>Hosting</h2>
+                    <p>{{hosting}}</p>
+                    {{/hosting}}
+                </div>
+                <div class="tab-pane" id="needs" role="tabpanel">
+                    {{#needProducts}}
+                    <h2>Products</h2>
+                    <p>{{needProducts}}</p>
+                    {{/needProducts}}
+                    {{#needServices}}
+                    <h2>Services</h2>
+                    <p>{{needServices}}</p>
+                    {{/needServices}}
+                    {{#needTransports}}
+                    <h2>Transports</h2>
+                    <p>{{needTransports}}</p>
+                    {{/needTransports}}
+                </div>
+                <div class="tab-pane" id="resources" role="tabpanel">
+                    {{#resourceProducts}}
+                    <h2>Products</h2>
+                    <p>{{resourceProducts}}</p>
+                    {{/resourceProducts}}
+                    {{#resourceServices}}
+                    <h2>Services</h2>
+                    <p>{{resourceServices}}</p>
+                    {{/resourceServices}}
+                    {{#resourceTransports}}
+                    <h2>Transports</h2>
+                    <p>{{resourceTransports}}</p>
+                    {{/resourceTransports}}
+                </div>
+            </div>
+        </div>
+        <div id="markerEdit" style="display:none">
+            <p>
+                <form id="markerEditForm">
+                    <div class="form-group">
+                        <label for="edit-name-en">Name</label>
+                        <input type="text" class="form-control" id="edit-name-en" value="{{name}}">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-description-en">Description</label>
+                        <textarea rows="3" class="form-control" id="edit-description-en">{{description}}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-lat-en">Coordinates (Lat/Long)</label>
+                        <input type="text" class="form-control" id="edit-lat-en" value="{{coordinates.lat}}" placeholder="Latitude, e.g. 38.3820365">
+                        <br />
+                        <input type="text" class="form-control" id="edit-long-en" value="{{coordinates.long}}" placeholder="Longitude, e.g. -8.480072">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-contact-en">Contact</label>
+                        <textarea rows="3" class="form-control" id="edit-contact-en">{{contact}}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-phone-en">Phone</label>
+                        <input type="text" class="form-control" id="edit-phone-en" value="{{phone}}">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-email-en">Email</label>
+                        <input type="email" class="form-control" id="edit-email-en" value="{{email}}">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-website-en">Website</label>
+                        <input type="url" class="form-control" id="edit-website-en" value="{{website}}">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-logo-en">Image / Logo URL</label>
+                        <input type="text" class="form-control" id="edit-logo-en" value="{{logo}}">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-means-en">Means</label>
+                        <textarea rows="3" class="form-control" id="edit-means-en">{{means}}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-hosting-en">Hosting</label>
+                        <textarea rows="3" class="form-control" id="edit-hosting-en">{{hosting}}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-needProducts-en">Needs: Products</label>
+                        <textarea rows="3" class="form-control" id="edit-needProducts-en">{{needProducts}}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-needServices-en">Needs: Services</label>
+                        <textarea rows="3" class="form-control" id="edit-needServices-en">{{needServices}}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-needTransports-en">Needs: Transports</label>
+                        <textarea rows="3" class="form-control" id="edit-needTransports-en">{{needTransports}}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-resourceProducts-en">Resources: Products</label>
+                        <textarea rows="3" class="form-control" id="edit-resourceProducts-en">{{resourceProducts}}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-resourceServices-en">Resources: Services</label>
+                        <textarea rows="3" class="form-control" id="edit-resourceServices-en">{{resourceServices}}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-resourceTransports-en">Resources: Transports</label>
+                        <textarea rows="3" class="form-control" id="edit-resourceTransports-en">{{resourceTransports}}</textarea>
+                    </div>
+                </form>
+                <button class="btn" id="cancel">Cancel</button>
+                <button class="btn btn-primary" id="save">Save</button>
+            </p>
+        </div>
+    </script>
+
+    <script id="template_results_pt" type="x-tmpl-mustache">
+        {{^results}}<i>Sem resultados.</i>{{/results}}
+        <ul id="resultEntries">
+            {{#results}}
+                <li data-id="{{resultId}}">{{resultName}}</li>
+            {{/results}}
+        </ul>
+    </script>
+
+    <script id="template_results_en" type="x-tmpl-mustache">
+        {{^results}}<i>No results.</i>{{/results}}
+        <ul id="resultEntries">
+            {{#results}}
+                <li data-id="{{resultId}}">{{resultName}}</li>
+            {{/results}}
+        </ul>
+    </script>
+
+    <script>
+        var map = L.map('map').setView([37.72, -8.51], 11);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
+
+        var debug;
+        var lang = 'pt';
+        var activeMarker;
+        var places = {};
+        var markerLookup = {};
+
+        var template = { pt: $('#template_pt').html(), en: $('#template_en').html() };
+        var template_results = { pt: $('#template_results_pt').html(), en: $('#template_results_en').html() };
+        Mustache.parse(template.pt);
+        Mustache.parse(template.en);
+        Mustache.parse(template_results.pt);
+        Mustache.parse(template_results.en);
+
+        function setupCountrySelection() {
+            document.querySelectorAll('#language img').forEach(function(el) {
+                var clickLang = el.getAttribute('data-lang');
+                el.addEventListener('click', function() {
+                    console.log('Language set to ' + clickLang);
+                    lang = clickLang;
+                    setMarkerContent(activeMarker);
+                });
+            });
+        }
+        setupCountrySelection();
+
+        function setupSearch() {
+            document.querySelector('#search input').addEventListener('keyup', function() {
+                var searchValue = new RegExp(document.querySelector('#search input').value, 'i');
+                var matches = [];
+                Object.keys(places).forEach(function(placeId) {
+                    if(matches.length >= 10)
+                        return;
+
+                    var placeString = JSON.stringify(places[placeId]);
+                    if(placeString.match(searchValue))
+                        matches.push({ resultId: placeId, resultName: localisePlace(places[placeId]).name });
+                });
+                console.log(matches);
+
+                var rendered = Mustache.render(template_results[lang], { results: matches });
+                document.querySelector('#results').style.display = 'block';
+                document.querySelector('#filter').style.display = 'none';
+                document.querySelector('#searchResults').innerHTML = rendered;
+
+                document.querySelectorAll('#resultEntries li').forEach(function(resultEntry) {
+                    resultEntry.addEventListener('click', function() {
+                        var placeId = resultEntry.getAttribute('data-id');
+                        openMarker(markerLookup[placeId]);
+                        markerLookup[placeId].openPopup();
+                    });
+                });
+            });
+        }
+        setupSearch();
+
+        function loadJSON(url, cb) {
+            var xhr = new XMLHttpRequest();
+
+            xhr.onload = function() {
+                cb(xhr.response);
+            };
+
+            xhr.onerror = function() {
+                console.error("Error while getting map.");
+            };
+
+            xhr.open("GET", url);
+            xhr.responseType = "json";
+            xhr.send();
+        }
+
+        loadJSON('map.json', function(json) {
+            places = debug = json;
+            placeOnMap(map, places);
+        });
+
+        function placeOnMap(map, places) {
+            Object.keys(places).forEach(function(placeId) {
+                var place = places[placeId];
+                var marker = L.marker([place.coordinates.lat, place.coordinates.long], { icon: chooseMarker(place.tags) }).addTo(map);
+                marker.placeData = place;
+                marker.placeId = placeId;
+                marker.on('click', openMarker);
+                marker.on('popupopen', attachPopupEvents);
+                marker.bindPopup();
+                markerLookup[placeId] = marker;
+            });
+        }
+
+        function formatWebsite(input) {
+            input = input.replace(/ /g, '');
+
+            if(input.match(/^https?:\/\//))
+                return input;
+            input = input.replace(/ /g, '');
+            return 'http://' + input;
+        }
+
+        function chooseMarker(tags) {
+            var icon;
+            var color;
+
+            if(tags.length > 1) {
+                icon = 'bolt';
+                color = 'orange';
+            } else if(tags[0] == 'Suppliers / Supporters') {
+                icon = 'shopping-cart';
+                color = 'green';
+            } else if(tags[0] == 'Projects / Members') {
+                icon = 'users';
+                color = 'purple';
+            } else if(tags[0] == 'Public services') {
+                icon = 'people-carry';
+                color = 'darkgreen';
+            } else if(tags[0] == 'Healer Network - Rede Curar') {
+                icon = 'spa';
+                color = 'red';
+            } else {
+                icon = 'bookmark';
+                color = 'cadetblue';
+            }
+
+            return L.AwesomeMarkers.icon({
+                icon: icon,
+                prefix: 'fa',
+                markerColor: color
+            });
+        }
+
+        function openMarker(marker) {
+            if(!marker || !marker.placeData) marker = this;
+            setMarkerContent(marker);
+            activeMarker = marker;
+        }
+
+        function attachPopupEvents() {
+            if(!document.getElementById('edit')) {
+                return;
+            }
+
+            document.getElementById('edit').addEventListener('click', function() {
+                document.getElementById('markerInformation').style.display = 'none';
+                document.getElementById('markerEdit').style.display = 'block';
+            });
+
+            document.getElementById('cancel').addEventListener('click', function() {
+                openMarker(activeMarker);
+                attachPopupEvents();
+            });
+
+            document.getElementById('save').addEventListener('click', function() {
+                document.getElementById('markerInformation').style.display = 'block';
+                document.getElementById('markerEdit').style.display = 'none';
+
+                var toSend = {};
+                document.querySelectorAll('#markerEditForm .form-control').forEach(function(input) {
+                    toSend[input.id] = input.value;
+                });
+
+                postData(`/save/${activeMarker.placeId}`, toSend)
+                    .then(data => console.log(`Save reply: ${JSON.stringify(data)}`))
+                    .catch(error => alert(`Save failed: ${error}`));
+            });
+        }
+
+        function postData(url, payload = {}) {
+            return fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json());
+        }
+
+        function setMarkerContent(marker) {
+            var rendered = Mustache.render(template[lang], localisePlace(marker.placeData));
+            marker.setPopupContent(rendered);
+            attachPopupEvents();
+        }
+
+        function localisePlace(place) {
+            var localised = {};
+            Object.keys(place).forEach(function(attr) {
+                if(!attr)
+                    return;
+                if(place[attr][lang]) {
+                    localised[attr] = place[attr][lang];
+                    return;
+                }
+                if(attr == 'coordinates') {
+                    localised[attr] = place[attr];
+                    return;
+                }
+
+                localised[attr] = place[attr].pt || place[attr].en;
+            });
+            return localised;
+        }
+    </script>
+
+
+  </body>
+</html>
